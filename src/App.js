@@ -3,6 +3,7 @@ import './App.scss'
 
 import Buttons from './components/Buttons'
 import Display from './components/Display'
+import Status from './components/Status'
 import Formula from './components/Formula'
 
 class App extends Component {
@@ -21,30 +22,44 @@ class App extends Component {
 
     initialState = {
         displayValue: '0',
+        result: '0',
         expressions: [],
+        status: '',
     }
 
     isEmpty() {
         return this.state.displayValue === '0' ? true : false
     }
 
-    isMaxLength() {
-        return this.state.displayValue.length >= 10 ? true : false
+    hasOnlyOperator() {
+        const operators = ['+', '-', '*', '/']
+
+        return (
+            operators.includes(this.state.displayValue.charAt(0)) &&
+            this.state.displayValue.length === 1
+        )
     }
 
-    handleClear(e) {
+    isMaxLength() {
+        return this.state.displayValue.length >= 20 ? true : false
+    }
+
+    handleClear() {
         this.setState(this.initialState)
     }
 
     handleNumbers(e) {
         if (this.isMaxLength()) {
-            console.log('Max length reached')
+            this.setState({
+                status: 'Max length reached',
+            })
             return
         }
 
-        const displayValue = this.isEmpty()
-            ? e.target.value
-            : this.state.displayValue.concat(e.target.value)
+        const displayValue =
+            this.isEmpty() || this.hasOnlyOperator()
+                ? e.target.value
+                : this.state.displayValue.concat(e.target.value)
 
         this.setState({
             displayValue: displayValue,
@@ -53,7 +68,9 @@ class App extends Component {
 
     handleDecimal(e) {
         if (this.isMaxLength()) {
-            console.log('Max length reached')
+            this.setState({
+                status: 'Max length reached',
+            })
             return
         }
 
@@ -70,7 +87,9 @@ class App extends Component {
 
     handleOperators(e) {
         if (this.isMaxLength()) {
-            console.log('Max length reached')
+            this.setState({
+                status: 'Max length reached',
+            })
             return
         }
 
@@ -84,127 +103,135 @@ class App extends Component {
         })
     }
 
-    handleEvaluate(e) {
+    handleEvaluate() {
         if (this.isEmpty()) {
-            console.log('Empty')
+            this.setState({
+                status: 'Empty',
+            })
             return
         }
 
-        const displayValue = this.state.displayValue
-        const expressions = this.state.expressions.concat(displayValue)
+        const expression = this.state.expressions
+            .concat(this.state.displayValue)
+            .join('')
 
-        // console.log('number: ', Number.parseFloat(displayValue))
+        const result =
+            Math.round(1000000000000 * eval(expression)) / 1000000000000
 
         this.setState({
-            expressions: expressions,
-            displayValue: this.initialState.displayValue,
+            expressions: this.initialState.expressions,
+            displayValue: result.toString(),
+            result: result,
         })
     }
 
     render() {
         return (
-            <div className="calculator-container">
-                <div className="calculator">
-                    <Formula formula={this.state.expressions} />
+            <div className='calculator-container'>
+                <div className='calculator'>
+                    <div className='calculator__info'>
+                        <Status status={this.state.status} />
+                        <Formula formula={this.state.expressions} />
+                    </div>
 
                     <Display displayValue={this.state.displayValue} />
 
-                    <div className="calculator__row calculator__row1">
+                    <div className='calculator__row calculator__row1'>
                         <Buttons
-                            name="clear"
-                            sign="AC"
+                            name='clear'
+                            sign='AC'
                             onClick={this.handleClear}
                         />
                         <Buttons
-                            name="multiply"
-                            sign="*"
+                            name='multiply'
+                            sign='*'
                             onClick={this.handleOperators}
                         />
                         <Buttons
-                            name="divide"
-                            sign="/"
-                            onClick={this.handleOperators}
-                        />
-                    </div>
-
-                    <div className="calculator__row calculator__row2">
-                        <Buttons
-                            name="seven"
-                            sign="7"
-                            onClick={this.handleNumbers}
-                        />
-                        <Buttons
-                            name="eight"
-                            sign="8"
-                            onClick={this.handleNumbers}
-                        />
-                        <Buttons
-                            name="nine"
-                            sign="9"
-                            onClick={this.handleNumbers}
-                        />
-                        <Buttons
-                            name="subtract"
-                            sign="-"
+                            name='divide'
+                            sign='/'
                             onClick={this.handleOperators}
                         />
                     </div>
 
-                    <div className="calculator__row calculator__row3">
+                    <div className='calculator__row calculator__row2'>
                         <Buttons
-                            name="four"
-                            sign="4"
+                            name='seven'
+                            sign='7'
                             onClick={this.handleNumbers}
                         />
                         <Buttons
-                            name="five"
-                            sign="5"
+                            name='eight'
+                            sign='8'
                             onClick={this.handleNumbers}
                         />
                         <Buttons
-                            name="six"
-                            sign="6"
+                            name='nine'
+                            sign='9'
                             onClick={this.handleNumbers}
                         />
                         <Buttons
-                            name="add"
-                            sign="+"
+                            name='subtract'
+                            sign='-'
                             onClick={this.handleOperators}
                         />
                     </div>
 
-                    <div className="calculator__row calculator__row4">
+                    <div className='calculator__row calculator__row3'>
                         <Buttons
-                            name="one"
-                            sign="1"
+                            name='four'
+                            sign='4'
                             onClick={this.handleNumbers}
                         />
                         <Buttons
-                            name="two"
-                            sign="2"
+                            name='five'
+                            sign='5'
                             onClick={this.handleNumbers}
                         />
                         <Buttons
-                            name="three"
-                            sign="3"
+                            name='six'
+                            sign='6'
                             onClick={this.handleNumbers}
                         />
                         <Buttons
-                            name="equals"
-                            sign="="
+                            name='add'
+                            sign='+'
+                            onClick={this.handleOperators}
+                        />
+                    </div>
+
+                    <div className='calculator__row calculator__row4'>
+                        <Buttons
+                            name='one'
+                            sign='1'
+                            onClick={this.handleNumbers}
+                        />
+                        <Buttons
+                            name='two'
+                            sign='2'
+                            onClick={this.handleNumbers}
+                        />
+                        <Buttons
+                            name='three'
+                            sign='3'
+                            onClick={this.handleNumbers}
+                        />
+                        <Buttons
+                            name='equals'
+                            sign='='
                             onClick={this.handleEvaluate}
                         />
                     </div>
 
-                    <div className="calculator__row calculator__row5">
+                    <div className='calculator__row calculator__row5'>
                         <Buttons
-                            name="zero"
-                            sign="0"
+                            name='zero'
+                            sign='0'
                             onClick={this.handleNumbers}
                         />
                         <Buttons
-                            name="decimal"
-                            sign="."
+                            name='decimal'
+                            sign='.'
                             onClick={this.handleDecimal}
                         />
                     </div>

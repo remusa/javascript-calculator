@@ -1,11 +1,9 @@
 import React from 'react'
 
-const Formula = props => {
-    return (
-        <div id="formula" className="calculator__formula">
-            {props.formula}
-        </div>
-    )
-}
+const Formula = props => (
+    <div id='formula' className='calculator__info__formula'>
+        {props.formula}
+    </div>
+)
 
 export default Formula
