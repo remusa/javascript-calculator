@@ -6,6 +6,8 @@ import Display from './components/Display'
 import Status from './components/Status'
 import Formula from './components/Formula'
 
+const endsWithOperator = /[*/+-]$/
+
 class App extends Component {
     constructor(props) {
         super(props)
@@ -13,6 +15,8 @@ class App extends Component {
         this.state = this.initialState
 
         this.isEmpty = this.isEmpty.bind(this)
+        this.isOperator = this.isOperator.bind(this)
+        this.removeOperators = this.removeOperators.bind(this)
         this.handleClear = this.handleClear.bind(this)
         this.handleNumbers = this.handleNumbers.bind(this)
         this.handleOperators = this.handleOperators.bind(this)
@@ -22,8 +26,7 @@ class App extends Component {
 
     initialState = {
         displayValue: '0',
-        result: '0',
-        expressions: [],
+        expressions: '',
         status: '',
     }
 
@@ -32,12 +35,15 @@ class App extends Component {
     }
 
     hasOnlyOperator() {
-        const operators = ['+', '-', '*', '/']
-
         return (
-            operators.includes(this.state.displayValue.charAt(0)) &&
+            this.isOperator(this.state.displayValue) &&
             this.state.displayValue.length === 1
         )
+    }
+
+    isOperator(char) {
+        const ops = ['*', '/', '+', '-']
+        return ops.includes(char)
     }
 
     isMaxLength() {
@@ -97,10 +103,32 @@ class App extends Component {
             ? e.target.value
             : this.state.displayValue.concat(e.target.value)
 
+        const expressions = this.state.expressions.concat(displayValue)
+
         this.setState({
-            expressions: this.state.expressions.concat(displayValue),
+            expressions: expressions,
             displayValue: this.initialState.displayValue,
         })
+        // }
+    }
+
+    removeOperators(expression) {
+        const exp = expression
+            .replace(/[*]/g, ',*')
+            .replace(/[/]/g, ',/')
+            .replace(/[+]/g, ',+')
+            .replace(/[-]/g, ',-')
+            .split(',')
+
+        for (let i = 0; i < exp.length; i++) {
+            if (exp[i].length === 1) {
+                while (this.isOperator(exp[i])) {
+                    exp.splice(i, 1)
+                }
+            }
+        }
+
+        return exp.join('')
     }
 
     handleEvaluate() {
@@ -111,17 +139,20 @@ class App extends Component {
             return
         }
 
-        const expression = this.state.expressions
-            .concat(this.state.displayValue)
-            .join('')
+        let expression = this.state.expressions.concat(this.state.displayValue)
+
+        if (endsWithOperator.test(expression)) {
+            expression = expression.slice(0, -1)
+        }
+
+        expression = this.removeOperators(expression)
 
         const result =
             Math.round(1000000000000 * eval(expression)) / 1000000000000
 
         this.setState({
-            expressions: this.initialState.expressions,
             displayValue: result.toString(),
-            result: result,
+            expressions: this.initialState.expressions,
         })
     }
 
